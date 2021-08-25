@@ -1,0 +1,146 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Data_jenis_mapel extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Data_jenis_mapel_model');
+        $this->load->model('Data_mapel_model');
+        $this->load->library('form_validation');        
+	$this->load->library('datatables');
+    }
+
+    public function index()
+    {
+        $data = array('title' => 'data_jenis_mapel');
+        $this->template->load('template','admin/data_jenis_mapel/data_jenis_mapel_list', $data);
+    } 
+    
+    public function json() {
+        header('Content-Type: application/json');
+        echo $this->Data_jenis_mapel_model->json();
+    }
+
+    public function read($id) 
+    {
+        $row = $this->Data_jenis_mapel_model->get_by_id($id);
+        if ($row) {
+            $data = array(
+                'title' => 'Read',
+		'id_jenis_mapel' => $row->id_jenis_mapel,
+		'nama_jenis_mapel' => $row->nama_jenis_mapel,
+	    );
+            $this->template->load('template','admin/data_jenis_mapel/data_jenis_mapel_read', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/data_jenis_mapel'));
+        }
+    }
+
+    public function create($id_klstpq="") 
+    {
+        $data = array(
+            'title' => 'Create',
+            'button' => 'Create',
+            'action' => site_url('admin/data_jenis_mapel/create_action'),
+    	    'id_jenis_mapel' => set_value('id_jenis_mapel'),
+    	    'nama_jenis_mapel' => set_value('nama_jenis_mapel'),
+            'id_klstpq' => set_value('id_klstpq', $id_klstpq),
+    	);
+        $this->template->load('template','admin/data_jenis_mapel/data_jenis_mapel_form', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            // $data = array(
+            //   'nama_jenis_mapel' => $this->input->post('nama_jenis_mapel',TRUE),
+            // );
+            // $this->Data_jenis_mapel_model->insert($data);
+
+            $data = array(
+                'nama_mapel' => $this->input->post('nama_jenis_mapel',TRUE),
+                'id_jenis_mapel' => '1',
+            );
+
+            $this->Data_mapel_model->insert($data);
+
+            $this->session->set_flashdata('message', 'Create Record Success');
+            $id_klstpq = $this->input->post('id_klstpq',TRUE);
+            redirect(site_url('admin/kelas_mapel/create/'.$id_klstpq));
+        }
+    }
+    
+    public function update($id) 
+    {
+        $row = $this->Data_jenis_mapel_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'title' => 'Update',
+                'button' => 'Update',
+                'action' => site_url('admin/data_jenis_mapel/update_action'),
+		'id_jenis_mapel' => set_value('id_jenis_mapel', $row->id_jenis_mapel),
+		'nama_jenis_mapel' => set_value('nama_jenis_mapel', $row->nama_jenis_mapel),
+	    );
+            $this->template->load('template','admin/data_jenis_mapel/data_jenis_mapel_form', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/data_jenis_mapel'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('id_jenis_mapel', TRUE));
+        } else {
+            $data = array(
+		'nama_jenis_mapel' => $this->input->post('nama_jenis_mapel',TRUE),
+	    );
+
+            $this->Data_jenis_mapel_model->update($this->input->post('id_jenis_mapel', TRUE), $data);
+            $this->session->set_flashdata('message', 'Update Record Success');
+            redirect(site_url('admin/data_jenis_mapel'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Data_jenis_mapel_model->get_by_id($id);
+
+        if ($row) {
+            $this->Data_jenis_mapel_model->delete($id);
+            $this->session->set_flashdata('message', 'Delete Record Success');
+            redirect(site_url('admin/data_jenis_mapel'));
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/data_jenis_mapel'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('nama_jenis_mapel', 'nama jenis mapel', 'trim|required');
+
+	$this->form_validation->set_rules('id_jenis_mapel', 'id_jenis_mapel', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Data_jenis_mapel.php */
+/* Location: ./application/controllers/Data_jenis_mapel.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2020-11-01 15:11:19 */
+/* http://harviacode.com */

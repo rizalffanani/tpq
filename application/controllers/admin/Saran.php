@@ -1,0 +1,156 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Saran extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Saran_model');
+        $this->load->library('form_validation');        
+	$this->load->library('datatables');
+    }
+
+    public function index()
+    {
+        $data = array('title' => 'saran');
+        $this->template->load('template','admin/saran/saran_list', $data);
+    } 
+    
+    public function json() {
+        header('Content-Type: application/json');
+        echo $this->Saran_model->json();
+    }
+
+    public function read($id) 
+    {
+        $row = $this->Saran_model->get_by_id($id);
+        if ($row) {
+            $data = array('status' => 'old',);
+            $this->Saran_model->update($id, $data);
+            $data = array(
+                'title' => 'Read',
+        		'id_saran' => $row->id_saran,
+        		'id_user' => $row->id_user,
+        		'saran' => $row->saran,
+        		'datetime' => $row->datetime,
+        		'status' => $row->status,
+            );
+            $this->template->load('template','admin/saran/saran_read', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/saran'));
+        }
+    }
+
+    public function create() 
+    {
+        $data = array(
+            'title' => 'Create',
+            'button' => 'Create',
+            'action' => site_url('admin/saran/create_action'),
+	    'id_saran' => set_value('id_saran'),
+	    'id_user' => set_value('id_user'),
+	    'saran' => '',
+	    'datetime' => set_value('datetime'),
+	    'status' => set_value('status'),
+	);
+        $this->template->load('template','admin/saran/saran_form', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            $data = array(
+		'id_user' => $this->input->post('id_user',TRUE),
+		'saran' => $this->input->post('saran',TRUE),
+		'datetime' => $this->input->post('datetime',TRUE),
+		'status' => $this->input->post('status',TRUE),
+	    );
+
+            $this->Saran_model->insert($data);
+            $this->session->set_flashdata('message', succ_msg('Create Record Success'));
+            $this->create();
+        }
+    }
+    
+    public function update($id) 
+    {
+        $row = $this->Saran_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'title' => 'Update',
+                'button' => 'Update',
+                'action' => site_url('admin/saran/update_action'),
+		'id_saran' => set_value('id_saran', $row->id_saran),
+		'id_user' => set_value('id_user', $row->id_user),
+		'saran' => set_value('saran', $row->saran),
+		'datetime' => set_value('datetime', $row->datetime),
+		'status' => set_value('status', $row->status),
+	    );
+            $this->template->load('template','admin/saran/saran_form', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/saran'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('id_saran', TRUE));
+        } else {
+            $data = array(
+		'id_user' => $this->input->post('id_user',TRUE),
+		'saran' => $this->input->post('saran',TRUE),
+		'datetime' => $this->input->post('datetime',TRUE),
+		'status' => $this->input->post('status',TRUE),
+	    );
+
+            $this->Saran_model->update($this->input->post('id_saran', TRUE), $data);
+            $this->session->set_flashdata('message', 'Update Record Success');
+            redirect(site_url('admin/saran'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Saran_model->get_by_id($id);
+
+        if ($row) {
+            $this->Saran_model->delete($id);
+            $this->session->set_flashdata('message', 'Delete Record Success');
+            redirect(site_url('admin/saran'));
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(site_url('admin/saran'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('id_user', 'id user', 'trim|required');
+	$this->form_validation->set_rules('saran', 'saran', 'trim|required');
+	$this->form_validation->set_rules('datetime', 'datetime', 'trim|required');
+	$this->form_validation->set_rules('status', 'status', 'trim|required');
+
+	$this->form_validation->set_rules('id_saran', 'id_saran', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Saran.php */
+/* Location: ./application/controllers/Saran.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2020-12-08 17:47:40 */
+/* http://harviacode.com */

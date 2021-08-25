@@ -1,0 +1,160 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Kelas_santri_model extends CI_Model
+{
+
+    public $table = 'kelas_santri';
+    public $table2 = 'nilai_santri';
+    public $table3 = 'view_nilai';
+    public $id = 'id_kelas_siswa';
+    public $order = 'DESC';
+
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    // datatables
+    function json($srt) {
+        $this->datatables->select('kelas_santri.id_kelas_siswa,kelas_santri.id_santri,id_klstpq, data_santri.nama_lengkap,nomor_induk');
+        $this->datatables->from('kelas_santri');
+        //add this line for join
+        $this->datatables->join('data_santri', 'kelas_santri.id_santri = data_santri.id_santri');
+        $this->datatables->where('kelas_santri.id_klstpq', $srt, '=' );
+        $this->datatables->add_column('action', 
+            anchor(site_url('admin/kelas_santri/nilai/$1'),'Nilai')." | ".
+            anchor(site_url('admin/kelas_santri/read/$1'),'Read')." | ".
+            anchor(site_url('admin/kelas_santri/delete/$3'),'Delete','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id_kelas_siswa,id_klstpq');
+        return $this->datatables->generate();
+    }
+
+    // get all
+    function get_all()
+    {
+        $this->db->order_by($this->id, $this->order);
+        return $this->db->get($this->table)->result();
+    }
+
+    // get data by id
+    function get_by_id($id)
+    {
+        $this->db->where($this->id, $id);
+        return $this->db->get($this->table)->row();
+    }   
+
+     // get data by id
+    function get_cek($id_santri,$id_klstpq)
+    {
+        $this->db->where('id_santri', $id_santri);
+        $this->db->where('id_klstpq', $id_klstpq);
+        return $this->db->get($this->table)->row();
+    }
+    
+    // get total rows
+    function total_rows($q = NULL) {
+        $this->db->like('id_kelas_siswa', $q);
+	$this->db->or_like('id_santri', $q);
+	$this->db->or_like('id_klstpq', $q);
+	$this->db->from($this->table);
+        return $this->db->count_all_results();
+    }
+
+    // get data with limit and search
+    function get_limit_data($limit, $start = 0, $q = NULL) {
+        $this->db->order_by($this->id, $this->order);
+        $this->db->like('id_kelas_siswa', $q);
+	$this->db->or_like('id_santri', $q);
+	$this->db->or_like('id_klstpq', $q);
+	$this->db->limit($limit, $start);
+        return $this->db->get($this->table)->result();
+    }
+
+    // insert data
+    function insert($data)
+    {
+        $this->db->insert($this->table, $data);
+    }
+
+    // update data
+    function update($id, $data)
+    {
+        $this->db->where($this->id, $id);
+        $this->db->update($this->table, $data);
+    }
+
+    // delete data
+    function delete2($id)
+    {
+        $this->db->where("id_kelas_siswa", $id);
+        $this->db->delete($this->table2);
+    }
+
+    function delete($id)
+    {
+        $this->db->where($this->id, $id);
+        $this->db->delete($this->table);
+    }
+
+    function get_all_nilai_group($id)
+    {
+        $query =  "SELECT view_nilai.*, COUNT(view_nilai.id_jenis_mapel) AS jml FROM view_nilai WHERE (view_nilai.id_kelas_siswa = $id) GROUP BY view_nilai.id_jenis_mapel";
+        return $this->db->query($query)->result();
+    }
+    function get_all_nilai_rank($id)
+    {
+        $query =  "SELECT id_kelas_siswa, SUM(nilai) AS ttl, rank() over (ORDER BY  ttl DESC) AS ranking FROM view_nilai WHERE id_klstpq = $id GROUP BY id_kelas_siswa ORDER BY  ranking ASC";
+        return $this->db->query($query)->result();
+    }
+    function get_all_nilai_rata($id)
+    {
+        $query =  "SELECT id_nilai,id_mapel, CAST(AVG(nilai) AS DECIMAL(10,1)) AS rata FROM view_nilai WHERE id_klstpq = $id GROUP BY id_mapel;";
+        return $this->db->query($query)->result();
+    }
+    function get_all_nilai_detail($id)
+    {
+        $this->db->where('id_kelas_siswa', $id);
+        return $this->db->get($this->table3)->result();
+    }
+
+    function get_all_nilai($id)
+    {
+        $this->db->where('id_kelas_siswa', $id);
+        return $this->db->get($this->table2)->result();
+    }
+
+    function get_cek_nilai($id_kelas_siswa,$id_klsmapel)
+    {
+        $this->db->where('id_kelas_siswa', $id_kelas_siswa);
+        $this->db->where('id_klsmapel', $id_klsmapel);
+        return $this->db->get($this->table2)->result();
+    }
+
+    function get_cek_nilairow($id_kelas_siswa,$id_klsmapel)
+    {
+        $this->db->where('id_kelas_siswa', $id_kelas_siswa);
+        $this->db->where('id_klsmapel', $id_klsmapel);
+        return $this->db->get($this->table2)->row();
+    }
+
+    function insert_nilai($data)
+    {
+        $this->db->insert($this->table2, $data);
+    }
+
+    // update data
+    function update_nilai($id, $data)
+    {
+        $this->db->where("id_nilai", $id);
+        $this->db->update($this->table2, $data);
+    }
+
+}
+
+/* End of file Kelas_santri_model.php */
+/* Location: ./application/models/Kelas_santri_model.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2020-11-01 15:16:45 */
+/* http://harviacode.com */
